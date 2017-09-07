@@ -99,18 +99,6 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
         } finally {
             mCursor.close();
         }
-//        while(mCursor.moveToNext()){
-//            int id = mCursor.getInt(mCursor.getColumnIndex(petEntry._ID));
-//            mCount = mCursor.getCount();
-//            mId = String.valueOf(id);
-//            mName = mCursor.getString(mCursor.getColumnIndex(petEntry.PET_NAME));
-//            newPetsLists.add(new petsList(mId,mName));
-//            Log.d("add",mId);
-//            Log.d("add",mName);
-//            //System.out.println("-->" + mId + "::::::::::" + mName);
-//            //System.out.println(newPetsLists);
-//
-//        }
 
         return petLine;
     }
