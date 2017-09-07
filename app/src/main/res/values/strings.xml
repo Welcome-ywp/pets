@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Pets</string>
+    <string name="action_delete">Delete All</string>
+    <string name="action_refresh">Refresh Data</string>
+    <string name="gender_male">MALE</string>
+    <string name="gender_female">FEMALE</string>
+    <string name="gender_unknown">UNKNOWN</string>
+</resources>
