@@ -27,7 +27,13 @@
         <activity
             android:name=".editPet"
             android:label="Edit Pet"
-            android:parentActivityName=".MainActivity"></activity>
+            android:parentActivityName=".MainActivity" />
+
+        <provider
+            android:name=".petProvider"
+            android:authorities="com.ywp.pets"
+            android:enabled="true"
+            android:exported="true"></provider>
     </application>
 
 </manifest>
