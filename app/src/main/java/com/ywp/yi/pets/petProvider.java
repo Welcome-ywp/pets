@@ -1,12 +1,15 @@
 package com.ywp.yi.pets;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import data.petContract;
 import data.petContract.petEntry;
@@ -44,8 +47,39 @@ public class petProvider extends ContentProvider {
 
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
-        // TODO: Implement this to handle requests to insert a new row.
-        throw new UnsupportedOperationException("Not yet implemented");
+        int match =  petMatcher.match(uri);
+        switch (match){
+            case PETS :
+                return insertPet(uri,values);
+            default:
+                // TODO: Implement this to handle requests to insert a new row.
+                throw new UnsupportedOperationException("Not yet implemented");
+        }
+
+    }
+
+    /**
+     * 插入新宠物数据
+     * @param uri
+     * @param values
+     * @return id
+     */
+
+    private Uri insertPet(Uri uri, ContentValues values) {
+
+        petSQLite petProviderSQL = new petSQLite(this.getContext());
+        //获取一个可读的数据库
+        SQLiteDatabase insertPetDatabase = petProviderSQL.getWritableDatabase();
+        long newPetId = insertPetDatabase.insert(petEntry.TABLE_NAME,null,values);
+        if (newPetId == -1){
+            Log.d("provider", "insertPet: error " + uri);
+            return null;
+        }else {
+            Log.d("provider", "insertPet: success " + uri);
+            System.out.print("insertPet: success " + uri);
+        }
+        //返回uri/id
+        return ContentUris.withAppendedId(uri,newPetId);
     }
 
     @Override

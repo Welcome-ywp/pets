@@ -3,6 +3,7 @@ package com.ywp.yi.pets;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.v4.view.WindowCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -109,13 +110,17 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
         petDataValue.put(petEntry.PET_BREED, String.valueOf(addPetBreedEditText.getText()));
         petDataValue.put(petEntry.PET_GENDER, addPetGenderSpinner.getBaseline());
         petDataValue.put(petEntry.PET_WEIGHT, String.valueOf(addPetMeaEditText.getText()));
+/*
+        long rowId = mPetData.insert(petEntry.TABLE_NAME, null, petDataValue);*/
+        Uri rowId = getContentResolver().insert(petEntry.CONTENT_URI,petDataValue);
+        Log.w("add", String.valueOf(rowId));
+        Log.d("add", String.valueOf(rowId));
 
-        long rowId = mPetData.insert(petEntry.TABLE_NAME, null, petDataValue);
-        if (rowId == -1) {
-            Toast.makeText(this, "insert error", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "insert success", Toast.LENGTH_SHORT).show();
-        }
+//        if (rowId == -1) {
+//            Toast.makeText(this, "insert error", Toast.LENGTH_SHORT).show();
+//        } else {
+//            Toast.makeText(this, "insert success", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     /**
@@ -165,6 +170,8 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
             }
             break;
             case R.id.btnAddCancle: {
+                Log.d("add","log test");
+                Log.w("addw","log test");
                 readPetTableLine();
                 addPetNameEditText.setText("Table line " + readPetTableLine());
                 //Log.d("add", "" + readPetTableLine());
