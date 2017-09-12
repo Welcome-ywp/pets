@@ -188,17 +188,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 petEntry.PET_WEIGHT
         };
         mPetArrayData.clear();
-        petSQLite mSQLite = new petSQLite(this);
-        petData = mSQLite.getReadableDatabase();
-        Cursor cursor = petData.query(petEntry.TABLE_NAME,
-                projection, null, null, null, null, null);
+//        petSQLite mSQLite = new petSQLite(this);
+//        petData = mSQLite.getReadableDatabase();
+//        Cursor cursor = petData.query(petEntry.TABLE_NAME,
+//                projection, null, null, null, null, null);
+        Cursor cursor = getContentResolver().query(petEntry.CONTENT_URI,projection,null,null,null);
         try {
 
             while (cursor.moveToNext()) {
                 int petId = cursor.getInt(cursor.getColumnIndex(petEntry._ID));
-                Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));
-                Id = String.valueOf(petId);
-                Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));
+                Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));//品种
+                Id = String.valueOf(petId);//ID
+                Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));//姓名
                 mPetArrayData.add(new petsList(Name, Breed));
                 Log.d("add", Id);
                 Log.d("add", Name);

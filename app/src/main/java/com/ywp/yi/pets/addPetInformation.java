@@ -32,8 +32,6 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
     private EditText addPetBreedEditText;
     private EditText addPetMeaEditText;
 
-//    private Button addDeletePet;
-
     private int mGender = 0;
     private static SQLiteDatabase mPetData;
 
@@ -45,7 +43,6 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
         //查找控件
         findAddViews();
         //给按键绑定监听器
-//        addDeletePet.setOnClickListener(this);
         addPetOkButton.setOnClickListener(this);
         addPetCancleButton.setOnClickListener(this);
 /**
@@ -80,7 +77,7 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
     /**
      * 读取数据库中的数据行数
      *
-     * @return
+     * @return petLine
      */
     public int readPetTableLine() {
         //Cursor petCursor = mPetData.rawQuery("SELECT * FROM " + petEntry.TABLE_NAME, null);
