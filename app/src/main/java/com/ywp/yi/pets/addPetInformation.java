@@ -132,7 +132,7 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        String selectPosition = (String) adapterView.getItemAtPosition(i);
+        String selectPosition = (String) adapterView.getItemAtPosition(i);//获取当前选中的值
         if (!TextUtils.isEmpty(selectPosition)) {
             //Toast.makeText(this,selectPosition,Toast.LENGTH_SHORT).show();
             if (selectPosition.equals(getString(R.string.gender_female))) {
@@ -153,7 +153,7 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
-        mGender = 0;
+        mGender = petEntry.GENDER_UNKNOWN;
         //默认
     }
 

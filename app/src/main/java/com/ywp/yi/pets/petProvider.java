@@ -80,8 +80,8 @@ public class petProvider extends ContentProvider {
      */
 
     private Uri insertPet(Uri uri, ContentValues values) {
-
-        if (values.getAsString(petEntry.PET_NAME) == null) {//添加的宠物信息 ,名字是否为空
+        //添加的宠物信息 ,名字是否为空
+        if ((values.getAsString(petEntry.PET_NAME).isEmpty())) {
             throw new IllegalArgumentException("pet name can not null");
         }
         //添加 的宠物信息 品种 是否为空 , 或者有效值
