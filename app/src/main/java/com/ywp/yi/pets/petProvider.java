@@ -85,7 +85,7 @@ public class petProvider extends ContentProvider {
             throw new IllegalArgumentException("pet name can not null");
         }
         //添加 的宠物信息 品种 是否为空 , 或者有效值
-        if (values.getAsString(petEntry.PET_GENDER) == null || !isGenderValid(values.getAsInteger(petEntry.PET_GENDER))) {
+        if (!isGenderValid(values.getAsInteger(petEntry.PET_GENDER))) {
             throw new IllegalArgumentException("gender error");
         }
         //添加的宠物信息 体重 是否小于0

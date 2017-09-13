@@ -33,7 +33,7 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
     private EditText addPetBreedEditText;
     private EditText addPetMeaEditText;
 
-    private int mGender = 0;
+    private static int mGender = 0;
     private static SQLiteDatabase mPetData;
 
     @Override
@@ -108,11 +108,11 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
         ContentValues petDataValue = new ContentValues();
         petDataValue.put(petEntry.PET_NAME, String.valueOf(addPetNameEditText.getText()));
         petDataValue.put(petEntry.PET_BREED, String.valueOf(addPetBreedEditText.getText()));
-        petDataValue.put(petEntry.PET_GENDER, addPetGenderSpinner.getBaseline());
+        petDataValue.put(petEntry.PET_GENDER, mGender);
         petDataValue.put(petEntry.PET_WEIGHT, String.valueOf(addPetMeaEditText.getText()));
 /*
         long rowId = mPetData.insert(petEntry.TABLE_NAME, null, petDataValue);*/
-        Uri rowId = getContentResolver().insert(petEntry.CONTENT_URI,petDataValue);
+        Uri rowId = getContentResolver().insert(petEntry.CONTENT_URI, petDataValue);
         Log.w("add", String.valueOf(rowId));
         Log.d("add", String.valueOf(rowId));
 
@@ -134,15 +134,16 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         String selectPosition = (String) adapterView.getItemAtPosition(i);
         if (!TextUtils.isEmpty(selectPosition)) {
+            //Toast.makeText(this,selectPosition,Toast.LENGTH_SHORT).show();
             if (selectPosition.equals(getString(R.string.gender_female))) {
                 Log.d("add", "female");
                 mGender = petEntry.GENDER_FEMALE;
                 //选中了female
-            } else if (selectPosition.equals(R.string.gender_male)) {
+            } else if (selectPosition.equals(getString(R.string.gender_male))) {
                 Log.d("add", "male");
                 mGender = petEntry.GENDER_MALE;
                 //选中了male
-            } else {
+            } else if (selectPosition.equals(getString(R.string.gender_unknown))){
                 Log.d("add", "unknown");
                 mGender = petEntry.GENDER_UNKNOWN;
                 //选中了unknown
@@ -170,10 +171,10 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
             }
             break;
             case R.id.btnAddCancle: {
-                Log.d("add","log test");
-                Log.w("addw","log test");
+                Log.d("add", "log test");
+                Log.w("addw", "log test");
                 readPetTableLine();
-                addPetNameEditText.setText("Table line " + readPetTableLine());
+                addPetNameEditText.setText("Table line " + readPetTableLine() + "\n" + mGender);//addPetGenderSpinner.getBaseline());
                 //Log.d("add", "" + readPetTableLine());
                 //deletePetData();//从数据库中删除一组数据
             }

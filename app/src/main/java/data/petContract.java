@@ -37,9 +37,8 @@ public final class petContract {
         public static final String PET_WEIGHT = "weight";
 
         public static final int GENDER_UNKNOWN = 0;
-        public static final int GENDER_FEMALE = 1;
-        public static final int GENDER_MALE = 2;
-
+        public static final int GENDER_MALE = 1;
+        public static final int GENDER_FEMALE = 2;
 
     }
 }
