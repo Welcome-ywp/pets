@@ -47,10 +47,10 @@ public class petProvider extends ContentProvider {
 
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
-        int match =  petMatcher.match(uri);
-        switch (match){
-            case PETS :
-                return insertPet(uri,values);
+        int match = petMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return insertPet(uri, values);
             default:
                 // TODO: Implement this to handle requests to insert a new row.
                 throw new UnsupportedOperationException("Not yet implemented");
@@ -59,7 +59,21 @@ public class petProvider extends ContentProvider {
     }
 
     /**
+     * 判断输入的宠物性别是有效
+     *
+     * @param gender
+     * @return
+     */
+    private boolean isGenderValid(int gender) {
+        if (gender == petEntry.GENDER_FEMALE || gender == petEntry.GENDER_MALE || gender == petEntry.GENDER_UNKNOWN) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 插入新宠物数据
+     *
      * @param uri
      * @param values
      * @return id
@@ -67,19 +81,32 @@ public class petProvider extends ContentProvider {
 
     private Uri insertPet(Uri uri, ContentValues values) {
 
+        if (values.getAsString(petEntry.PET_NAME) == null) {//添加的宠物信息 ,名字是否为空
+            throw new IllegalArgumentException("pet name can not null");
+        }
+        //添加 的宠物信息 品种 是否为空 , 或者有效值
+        if (values.getAsString(petEntry.PET_GENDER) == null || !isGenderValid(values.getAsInteger(petEntry.PET_GENDER))) {
+            throw new IllegalArgumentException("gender error");
+        }
+        //添加的宠物信息 体重 是否小于0
+        Integer weight = values.getAsInteger(petEntry.PET_WEIGHT);
+        if (weight != null && weight < 0) {
+            throw new IllegalArgumentException("weight error");
+        }
+
         petSQLite petProviderSQL = new petSQLite(this.getContext());
         //获取一个可读的数据库
         SQLiteDatabase insertPetDatabase = petProviderSQL.getWritableDatabase();
-        long newPetId = insertPetDatabase.insert(petEntry.TABLE_NAME,null,values);
-        if (newPetId == -1){
+        long newPetId = insertPetDatabase.insert(petEntry.TABLE_NAME, null, values);
+        if (newPetId == -1) {
             Log.d("provider", "insertPet: error " + uri);
             return null;
-        }else {
+        } else {
             Log.d("provider", "insertPet: success " + uri);
             System.out.print("insertPet: success " + uri);
         }
         //返回uri/id
-        return ContentUris.withAppendedId(uri,newPetId);
+        return ContentUris.withAppendedId(uri, newPetId);
     }
 
     @Override
@@ -99,8 +126,8 @@ public class petProvider extends ContentProvider {
         int matchCode = petMatcher.match(uri);//获取用于查询的编码
         switch (matchCode) {
             case PETS: {
-                queryPetCursor = queryPetDatabase.query(petEntry.TABLE_NAME,projection,
-                        selection,selectionArgs,null,null,null);
+                queryPetCursor = queryPetDatabase.query(petEntry.TABLE_NAME, projection,
+                        selection, selectionArgs, null, null, null);
             }
             break;
             case PETS_ID: {
