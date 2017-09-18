@@ -1,9 +1,12 @@
 package com.ywp.yi.pets;
 
+import android.app.LoaderManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -17,13 +20,15 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.net.URI;
 import java.util.ArrayList;
 
+import Adapter.petCursorAdapter;
 import Adapter.petsListAdapter;
 import data.petContract.petEntry;
 import data.petSQLite;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener , LoaderManager.LoaderCallbacks<Cursor>{
 
     Toolbar toolbar;
     ListView lvPets;
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mPetArrayData = new ArrayList<>();
         petAdapter = new petsListAdapter(this, mPetArrayData);
-        lvPets.setAdapter(petAdapter);
+       // lvPets.setAdapter(petAdapter);
         //载入数据
         upDatePetList();
         //ListView点击事件
@@ -65,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lvPets.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(final AdapterView<?> adapterView, View view, final int itemPosition, long l) {
+                Toast.makeText(MainActivity.this,"" + itemPosition,Toast.LENGTH_SHORT).show();
                 //新建一个对话框
                 AlertDialog.Builder deleteDialog = new AlertDialog.Builder(MainActivity.this);
                 deleteDialog.setIcon(R.mipmap.ic_launcher);//设置对话框图标
@@ -164,12 +170,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 删除数据
+     * 删除所有数据
      */
     private void deletePetList() {
-        petSQLite mSQLite = new petSQLite(this);
-        petData = mSQLite.getReadableDatabase();
-        petData.delete(petEntry.TABLE_NAME, null, null);
+        getContentResolver().delete(petEntry.CONTENT_URI,null,null);
+//        petSQLite mSQLite = new petSQLite(this);
+//        petData = mSQLite.getReadableDatabase();
+//        petData.delete(petEntry.TABLE_NAME, null, null);
     }
 
     /**
@@ -193,15 +200,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        petData = mSQLite.getReadableDatabase();
 //        Cursor cursor = petData.query(petEntry.TABLE_NAME,
 //                projection, null, null, null, null, null);
+        //单个数据的uri
+        //Uri singlePetContentUri = Uri.parse(petEntry.CONTENT_URI + "/" + 2);
+
         Cursor cursor = getContentResolver().query(petEntry.CONTENT_URI,projection,null,null,null);
-        try {
+
+        petCursorAdapter adapter = new petCursorAdapter(this,cursor);
+        lvPets.setAdapter(adapter);
+        /*try {
 
             while (cursor.moveToNext()) {
                 int petId = cursor.getInt(cursor.getColumnIndex(petEntry._ID));
                 Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));//品种
                 Id = String.valueOf(petId);//ID
                 Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));//姓名
-                mPetArrayData.add(new petsList(Name, Breed));
+                mPetArrayData.add(new petsList(Name + Id, Breed));
                 Log.d("add", Id);
                 Log.d("add", Name);
             }
@@ -210,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } finally {
             //关闭cursor
             cursor.close();
-        }
+        }*/
     }
 
     /**
@@ -227,4 +240,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                .setAction("Action", null).show();
     }
 
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
 }
