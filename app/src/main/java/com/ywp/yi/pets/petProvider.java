@@ -3,12 +3,15 @@ package com.ywp.yi.pets;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.IntentFilter;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.util.Log;
 
 import data.petContract;
@@ -34,8 +37,25 @@ public class petProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        // Implement this to handle requests to delete one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+
+        petSQLite updatePetDatabase = new petSQLite(this.getContext());
+        SQLiteDatabase petDeleteDatabase = updatePetDatabase.getWritableDatabase();
+        int match = petMatcher.match(uri);
+        switch (match){
+            case PETS :{
+                return petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
+
+            }
+            case PETS_ID :{
+                selection = petEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
+            }
+            default:
+                // Implement this to handle requests to delete one or more rows.
+                throw new UnsupportedOperationException("Not yet implemented");
+
+        }
     }
 
     @Override
@@ -79,6 +99,7 @@ public class petProvider extends ContentProvider {
      * @return id
      */
 
+    @Nullable
     private Uri insertPet(Uri uri, ContentValues values) {
         //添加的宠物信息 ,名字是否为空
         if ((values.getAsString(petEntry.PET_NAME).isEmpty())) {
@@ -105,6 +126,8 @@ public class petProvider extends ContentProvider {
             Log.d("provider", "insertPet: success " + uri);
             System.out.print("insertPet: success " + uri);
         }
+
+        getContext().getContentResolver().notifyChange(petEntry.CONTENT_URI,null);
         //返回uri/id
         return ContentUris.withAppendedId(uri, newPetId);
     }
@@ -141,10 +164,62 @@ public class petProvider extends ContentProvider {
         return queryPetCursor;
     }
 
+    /**
+     * 输入完整性检验
+     * @param uri
+     * @param values
+     * @param selection
+     * @param selectionArgs
+     * @return
+     */
+    private int checkPetValueValid(Uri uri, ContentValues values, String selection,
+                                   String[] selectionArgs){
+        if (values.containsKey(petEntry.PET_NAME)){//判断输入时候含有 PET_NAME 键值
+            String petName = values.getAsString(petEntry.PET_NAME);
+            if (petName == null){//名字是否为空
+
+            }
+        }
+        if (values.containsKey(petEntry.PET_GENDER)){//判断输入时候含有 PET_GENDER 键值
+            Integer petGender = values.getAsInteger(petEntry.PET_GENDER);
+            if (petGender == null){//品种是否为空
+
+            }
+
+        }
+        if (values.containsKey(petEntry.PET_WEIGHT)){//判断输入时候含有 PET_WEIGHT 键值
+            Integer petWeight = values.getAsInteger(petEntry.PET_WEIGHT);
+            if (petWeight != null && petWeight < 0){//重量输入错误
+
+            }
+        }
+
+        petSQLite petProviderSQL = new petSQLite(this.getContext());
+        //获取一个可写的数据库
+        SQLiteDatabase updatePetDatabase = petProviderSQL.getWritableDatabase();
+
+        return updatePetDatabase.update(petEntry.TABLE_NAME,values,selection,selectionArgs);
+    }
+
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
+
+
+        int matchCode = petMatcher.match(uri);//获取用于查询的编码
+
+        switch (matchCode){
+            case PETS :{
+                return checkPetValueValid(uri,values,selection,selectionArgs);
+            }
+            case PETS_ID :{
+                selection = petEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return checkPetValueValid(uri,values,selection,selectionArgs);
+            }
+            default:
+                throw new UnsupportedOperationException("Not yet implemented");
+        }
         // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

@@ -1,9 +1,13 @@
 package com.ywp.yi.pets;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -17,38 +21,47 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.net.URI;
 import java.util.ArrayList;
 
+import Adapter.petCursorAdapter;
 import Adapter.petsListAdapter;
 import data.petContract.petEntry;
 import data.petSQLite;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+import static java.security.AccessController.getContext;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     Toolbar toolbar;
     ListView lvPets;
     FloatingActionButton fab;
+
+    private static final int PET_LOADER_ID = 0;
 
     private ArrayList<petsList> mPetArrayData;
     private petsListAdapter petAdapter;
 
     private SQLiteDatabase petData;
 
+    private petCursorAdapter cursorAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d("main","log test");
+        Log.d("main", "log test");
 
         findPetsView();
         setSupportActionBar(toolbar);
         fab.setOnClickListener(this);//绑定监听器
 
-        mPetArrayData = new ArrayList<>();
-        petAdapter = new petsListAdapter(this, mPetArrayData);
-        lvPets.setAdapter(petAdapter);
-        //载入数据
-        upDatePetList();
+        //将adapter 关联ListView
+        cursorAdapter = new petCursorAdapter(this, null);
+        lvPets.setAdapter(cursorAdapter);
+        // 初始化Loader
+        getLoaderManager().initLoader(PET_LOADER_ID, null, this);// 加载器Id 可选参数 LoadCallBack的实现
+
         //ListView点击事件
         lvPets.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -65,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lvPets.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(final AdapterView<?> adapterView, View view, final int itemPosition, long l) {
+                Toast.makeText(MainActivity.this, "" + itemPosition, Toast.LENGTH_SHORT).show();
                 //新建一个对话框
                 AlertDialog.Builder deleteDialog = new AlertDialog.Builder(MainActivity.this);
                 deleteDialog.setIcon(R.mipmap.ic_launcher);//设置对话框图标
@@ -73,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 deleteDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        deleteCurrentPet(itemPosition,adapterView);
+                        deleteCurrentPet(itemPosition, adapterView);
                     }
                 });
                 //设置对话框取消按键
@@ -164,12 +178,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 删除数据
+     * 删除所有数据
      */
     private void deletePetList() {
-        petSQLite mSQLite = new petSQLite(this);
-        petData = mSQLite.getReadableDatabase();
-        petData.delete(petEntry.TABLE_NAME, null, null);
+        getContentResolver().delete(petEntry.CONTENT_URI, null, null);
+//        petSQLite mSQLite = new petSQLite(this);
+//        petData = mSQLite.getReadableDatabase();
+//        petData.delete(petEntry.TABLE_NAME, null, null);
     }
 
     /**
@@ -188,29 +203,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 petEntry.PET_GENDER,
                 petEntry.PET_WEIGHT
         };
+        CursorLoader cursorLoader = new CursorLoader(this, petEntry.CONTENT_URI,
+                projection, null, null, null);
         mPetArrayData.clear();
 //        petSQLite mSQLite = new petSQLite(this);
 //        petData = mSQLite.getReadableDatabase();
 //        Cursor cursor = petData.query(petEntry.TABLE_NAME,
 //                projection, null, null, null, null, null);
-        Cursor cursor = getContentResolver().query(petEntry.CONTENT_URI,projection,null,null,null);
-        try {
+        //单个数据的uri
+        //Uri singlePetContentUri = Uri.parse(petEntry.CONTENT_URI + "/" + 2);
 
-            while (cursor.moveToNext()) {
-                int petId = cursor.getInt(cursor.getColumnIndex(petEntry._ID));
-                Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));//品种
-                Id = String.valueOf(petId);//ID
-                Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));//姓名
-                mPetArrayData.add(new petsList(Name, Breed));
-                Log.d("add", Id);
-                Log.d("add", Name);
-            }
-            //更新adapter
-            petAdapter.notifyDataSetChanged();
-        } finally {
-            //关闭cursor
-            cursor.close();
-        }
+        Cursor cursor = getContentResolver().query(petEntry.CONTENT_URI, projection, null, null, null);
+
+
+//        try {
+//
+//            while (cursor.moveToNext()) {
+//                int petId = cursor.getInt(cursor.getColumnIndex(petEntry._ID));
+//                Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));//品种
+//                Id = String.valueOf(petId);//ID
+//                Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));//姓名
+//                mPetArrayData.add(new petsList(Name + Id, Breed));
+//                Log.d("add", Id);
+//                Log.d("add", Name);
+//            }
+//            //更新adapter
+//            petAdapter.notifyDataSetChanged();
+//        } finally {
+//            //关闭cursor
+//            cursor.close();
+//        }
     }
 
     /**
@@ -227,4 +249,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                .setAction("Action", null).show();
     }
 
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+
+        String[] projection = {
+                petEntry._ID,
+                petEntry.PET_NAME,
+                petEntry.PET_BREED};
+
+        return new CursorLoader(this,petEntry.CONTENT_URI,projection,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        cursorAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        cursorAdapter.swapCursor(null);
+    }
 }
