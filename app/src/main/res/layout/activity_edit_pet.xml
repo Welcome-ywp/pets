@@ -70,6 +70,7 @@
                 android:text="Gender"/>
 
             <Spinner
+                android:id="@+id/spinnerEditPet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -93,7 +94,7 @@
                 android:textColor="#000000"
                 android:text="measurement"/>
             <EditText
-                android:id="@+id/EtAddPet"
+                android:id="@+id/EtEditPet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -103,29 +104,30 @@
             <!--android:inputType="numberDecimal" 输入类型设置为只能输入数字-->
         </LinearLayout>
 
-        <LinearLayout
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnEditCancle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp"
+            android:layout_marginRight="8dp"
+            android:layout_weight="1"
+            android:text="Cancle" />
+
+        <Button
+            android:id="@+id/btnEditSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="16dp">
-
-            <Button
-                android:id="@+id/btnEditCancle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginRight="8dp"
-                android:text="Cancle"/>
-            <Button
-                android:id="@+id/btnEditDel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginLeft="8dp"
-                android:text="deleat"/>
-
-        </LinearLayout>
+            android:layout_weight="1"
+            android:text="save" />
 
     </LinearLayout>
+
+</LinearLayout>

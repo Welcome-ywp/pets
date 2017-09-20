@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import data.petSQLite;
 
 import static data.petContract.petEntry;
+import static java.security.AccessController.getContext;
 
 public class addPetInformation extends AppCompatActivity implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
@@ -112,15 +113,11 @@ public class addPetInformation extends AppCompatActivity implements AdapterView.
         petDataValue.put(petEntry.PET_WEIGHT, String.valueOf(addPetMeaEditText.getText()));
 /*
         long rowId = mPetData.insert(petEntry.TABLE_NAME, null, petDataValue);*/
+        //返回包含id的uri
         Uri rowId = getContentResolver().insert(petEntry.CONTENT_URI, petDataValue);
         Log.w("add", String.valueOf(rowId));
         Log.d("add", String.valueOf(rowId));
 
-//        if (rowId == -1) {
-//            Toast.makeText(this, "insert error", Toast.LENGTH_SHORT).show();
-//        } else {
-//            Toast.makeText(this, "insert success", Toast.LENGTH_SHORT).show();
-//        }
     }
 
     /**
