@@ -49,12 +49,9 @@ public class petProvider extends ContentProvider {
             case PETS_ID :{
                 selection = petEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-<<<<<<< HEAD
 //                if (updateRow != 0){
 //                    getContext().getContentResolver().notifyChange(uri,null);
 //                }
-=======
->>>>>>> a77d697f3ad38818aceaf319ab4ce6a18be0b32c
                 return petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
             }
             default:
@@ -207,17 +204,12 @@ public class petProvider extends ContentProvider {
         petSQLite petProviderSQL = new petSQLite(this.getContext());
         //获取一个可写的数据库
         SQLiteDatabase updatePetDatabase = petProviderSQL.getWritableDatabase();
-<<<<<<< HEAD
         int updateRow = updatePetDatabase.update(petEntry.TABLE_NAME,values,selection,selectionArgs);
         //
         if (updateRow != 0){
             getContext().getContentResolver().notifyChange(uri,null);
         }
         return updateRow;
-=======
-
-        return updatePetDatabase.update(petEntry.TABLE_NAME,values,selection,selectionArgs);
->>>>>>> a77d697f3ad38818aceaf319ab4ce6a18be0b32c
     }
 
     @Override

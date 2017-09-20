@@ -178,15 +178,15 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
                     "please input petBreed",Toast.LENGTH_SHORT).show();
             return;
         }
-        if (TextUtils.isEmpty(etWeightEdit.getText())){//判断输入的体重是否有效
-
-        }else {
-            int weight = Integer.getInteger(String.valueOf(etWeightEdit.getText()));
-            if (weight < 0){
-                Toast.makeText(this,"please input correct petWeight",Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
+//        if (TextUtils.isEmpty(etWeightEdit.getText())){//判断输入的体重是否有效
+//
+//        }else {
+//            int weight = Integer.getInteger(String.valueOf(etWeightEdit.getText()));
+//            if (weight < 0){
+//                Toast.makeText(this,"please input correct petWeight",Toast.LENGTH_SHORT).show();
+//                return;
+//            }
+//        }
 
         ContentValues petValues = new ContentValues();
         //存入键值对
