@@ -1,6 +1,7 @@
 package com.ywp.yi.pets;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,9 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int PET_LOADER_ID = 0;
 
-    private ArrayList<petsList> mPetArrayData;
-    private petsListAdapter petAdapter;
-
     private SQLiteDatabase petData;
 
     private petCursorAdapter cursorAdapter;
@@ -65,12 +63,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //ListView点击事件
         lvPets.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
 
-                petsList p = (petsList) adapterView.getItemAtPosition(i);
+                Toast.makeText(MainActivity.this,"" + id,Toast.LENGTH_SHORT).show();
                 Intent editIntent = new Intent(MainActivity.this, editPet.class);
-                editIntent.putExtra("name", p.getPetName());
-                editIntent.putExtra("breed", p.getPetBreed());
+                Uri currentItemUri = ContentUris.withAppendedId(petEntry.CONTENT_URI,id);
+                editIntent.setData(currentItemUri);
+                Log.w("uri", "uri ->" + petEntry.CONTENT_URI + "/" + id );
                 startActivity(editIntent);
             }
         });
@@ -105,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 删除当前长按的宠物选项
-     *
      * @param petPosition
      * @param adapterView
      */
@@ -193,9 +191,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param
      */
     private void upDatePetList() {
-        String Id;
-        String Name;
-        String Breed;
+//        String Id;
+//        String Name;
+//        String Breed;
         String[] projection = { //需要显示的行
                 petEntry._ID,
                 petEntry.PET_NAME,
@@ -203,9 +201,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 petEntry.PET_GENDER,
                 petEntry.PET_WEIGHT
         };
-        CursorLoader cursorLoader = new CursorLoader(this, petEntry.CONTENT_URI,
-                projection, null, null, null);
-        mPetArrayData.clear();
+        //mPetArrayData.clear();
 //        petSQLite mSQLite = new petSQLite(this);
 //        petData = mSQLite.getReadableDatabase();
 //        Cursor cursor = petData.query(petEntry.TABLE_NAME,

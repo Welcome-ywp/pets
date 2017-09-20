@@ -49,6 +49,9 @@ public class petProvider extends ContentProvider {
             case PETS_ID :{
                 selection = petEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+//                if (updateRow != 0){
+//                    getContext().getContentResolver().notifyChange(uri,null);
+//                }
                 return petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
             }
             default:
@@ -127,7 +130,8 @@ public class petProvider extends ContentProvider {
             System.out.print("insertPet: success " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(petEntry.CONTENT_URI,null);
+        getContext().getContentResolver().notifyChange(uri,null);
+        Log.w("notify", "insertPet: ");
         //返回uri/id
         return ContentUris.withAppendedId(uri, newPetId);
     }
@@ -154,7 +158,10 @@ public class petProvider extends ContentProvider {
             }
             break;
             case PETS_ID: {
-
+                selection = petEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                queryPetCursor = queryPetDatabase.query(petEntry.TABLE_NAME, projection,
+                        selection, selectionArgs, null, null, null);
             }
             break;
             default:
@@ -197,8 +204,12 @@ public class petProvider extends ContentProvider {
         petSQLite petProviderSQL = new petSQLite(this.getContext());
         //获取一个可写的数据库
         SQLiteDatabase updatePetDatabase = petProviderSQL.getWritableDatabase();
-
-        return updatePetDatabase.update(petEntry.TABLE_NAME,values,selection,selectionArgs);
+        int updateRow = updatePetDatabase.update(petEntry.TABLE_NAME,values,selection,selectionArgs);
+        //
+        if (updateRow != 0){
+            getContext().getContentResolver().notifyChange(uri,null);
+        }
+        return updateRow;
     }
 
     @Override
