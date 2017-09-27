@@ -43,22 +43,27 @@ public class petProvider extends ContentProvider {
         int match = petMatcher.match(uri);
         switch (match){
             case PETS :{
-                return petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
+                int deleteRow = petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
+                getContext().getContentResolver().notifyChange(uri,null);
+                return deleteRow;
 
             }
             case PETS_ID :{
                 selection = petEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-//                if (updateRow != 0){
-//                    getContext().getContentResolver().notifyChange(uri,null);
-//                }
-                return petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
+
+                int deleteRow = petDeleteDatabase.delete(petEntry.TABLE_NAME,selection,selectionArgs);
+
+                getContext().getContentResolver().notifyChange(uri,null);
+
+                return deleteRow;
             }
             default:
                 // Implement this to handle requests to delete one or more rows.
                 throw new UnsupportedOperationException("Not yet implemented");
 
         }
+
     }
 
     @Override
@@ -129,11 +134,11 @@ public class petProvider extends ContentProvider {
             Log.d("provider", "insertPet: success " + uri);
             System.out.print("insertPet: success " + uri);
         }
-
+        Uri insertUri =  ContentUris.withAppendedId(uri, newPetId);
         getContext().getContentResolver().notifyChange(uri,null);
         Log.w("notify", "insertPet: ");
         //返回uri/id
-        return ContentUris.withAppendedId(uri, newPetId);
+        return insertUri;
     }
 
     @Override
@@ -155,20 +160,22 @@ public class petProvider extends ContentProvider {
             case PETS: {
                 queryPetCursor = queryPetDatabase.query(petEntry.TABLE_NAME, projection,
                         selection, selectionArgs, null, null, null);
+                queryPetCursor.setNotificationUri(getContext().getContentResolver(),uri);
+                return queryPetCursor;
             }
-            break;
             case PETS_ID: {
                 selection = petEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 queryPetCursor = queryPetDatabase.query(petEntry.TABLE_NAME, projection,
                         selection, selectionArgs, null, null, null);
+                queryPetCursor.setNotificationUri(getContext().getContentResolver(),uri);
+                return queryPetCursor;
             }
-            break;
             default:
+
                 // TODO: Implement this to handle query requests from clients.
                 throw new UnsupportedOperationException("Not yet implemented");
         }
-        return queryPetCursor;
     }
 
     /**
@@ -205,10 +212,8 @@ public class petProvider extends ContentProvider {
         //获取一个可写的数据库
         SQLiteDatabase updatePetDatabase = petProviderSQL.getWritableDatabase();
         int updateRow = updatePetDatabase.update(petEntry.TABLE_NAME,values,selection,selectionArgs);
-        //
-        if (updateRow != 0){
-            getContext().getContentResolver().notifyChange(uri,null);
-        }
+
+        getContext().getContentResolver().notifyChange(uri,null);
         return updateRow;
     }
 
@@ -221,16 +226,22 @@ public class petProvider extends ContentProvider {
 
         switch (matchCode){
             case PETS :{
-                return checkPetValueValid(uri,values,selection,selectionArgs);
+                int updateRow = checkPetValueValid(uri,values,selection,selectionArgs);
+                getContext().getContentResolver().notifyChange(uri,null);
+                return updateRow;
             }
             case PETS_ID :{
                 selection = petEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return checkPetValueValid(uri,values,selection,selectionArgs);
+                int updateRow = checkPetValueValid(uri,values,selection,selectionArgs);
+
+                getContext().getContentResolver().notifyChange(uri,null);
+                return updateRow;
             }
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
+
         // TODO: Implement this to handle requests to update one or more rows.
     }
 }
