@@ -18,7 +18,7 @@ public final class petContract {
      * content provider
      */
     //由与 PetsProvider 关联的每一个 URI 共用
-    public static final String CONTENT_AUTHORITY = "com.ywp.pets";
+    public static final String CONTENT_AUTHORITY = "com.ywp.provider.pets";
     //URI
     private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     //此常数存储位置将附加到基本内容 URI 的每个表的路径
