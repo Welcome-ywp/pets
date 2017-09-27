@@ -1,16 +1,22 @@
 package com.ywp.yi.pets;
 
+import android.app.Dialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -20,7 +26,7 @@ import android.widget.Toast;
 
 import data.petContract.petEntry;
 
-public class editPet extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener {
+public class editPet extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, View.OnTouchListener {
 
     private EditText etNameEdit;
     private EditText etBreedEdit;
@@ -33,6 +39,7 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
     private Uri currentPetUri;
 
     private int mGender = 0;
+    private boolean isAnythingChange = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,10 +58,22 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
         btnCancle.setOnClickListener(this);
         btnSave.setOnClickListener(this);
 
+        etNameEdit.setOnTouchListener(this);
+        etBreedEdit.setOnTouchListener(this);
+        etWeightEdit.setOnTouchListener(this);
+        spinnerEdit.setOnTouchListener(this);
+
         Intent editIntent = getIntent();
         currentPetUri = editIntent.getData();
 
         spinnerEdit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            /**
+             * 下拉栏选项监听
+             * @param adapterView
+             * @param view
+             * @param i
+             * @param l
+             */
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectPosition = (String) adapterView.getItemAtPosition(i);//获取当前选中的值
@@ -130,6 +149,9 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
             etWeightEdit.setText(Integer.toString(weight));
 
             switch (gender) {
+                case petEntry.GENDER_UNKNOWN:
+                    spinnerEdit.setSelection(0);
+                    break;
                 case petEntry.GENDER_MALE: {
                     spinnerEdit.setSelection(1);
                 }
@@ -138,7 +160,7 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
                     spinnerEdit.setSelection(2);
                 }
                 default:
-                    spinnerEdit.setSelection(0);
+                   // spinnerEdit.setSelection(0);
                     break;
             }
 
@@ -150,6 +172,10 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
 
     }
 
+    /**
+     * 按键监听
+     * @param view
+     */
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -167,37 +193,128 @@ public class editPet extends AppCompatActivity implements LoaderManager.LoaderCa
         }
     }
 
+    /**
+     * 保存宠物信息
+     */
     private void savePetInformation() {
 
-        if (TextUtils.isEmpty(etNameEdit.getText())) {//名字输入是否为空
+        String petName = etNameEdit.getText().toString();
+        String petBreed = etBreedEdit.getText().toString();
+        String weight = etWeightEdit.getText().toString();
+        int petWeight = 0;
+
+        if (TextUtils.isEmpty(petName)) {//名字输入是否为空
             Toast.makeText(this,"please input petName",Toast.LENGTH_SHORT).show();
             return;
         }
-        if (TextUtils.isEmpty(etBreedEdit.getText())) {//品种输入是否为空
-            Toast.makeText(this,"" +
-                    "please input petBreed",Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(petBreed)) {//品种输入是否为空
+            Toast.makeText(this,"please input petBreed",Toast.LENGTH_SHORT).show();
             return;
         }
-//        if (TextUtils.isEmpty(etWeightEdit.getText())){//判断输入的体重是否有效
-//
-//        }else {
-//            int weight = Integer.getInteger(String.valueOf(etWeightEdit.getText()));
-//            if (weight < 0){
-//                Toast.makeText(this,"please input correct petWeight",Toast.LENGTH_SHORT).show();
-//                return;
-//            }
-//        }
+        if (!TextUtils.isEmpty(weight)){//判断输入的体重是否有效
+            petWeight = Integer.parseInt(weight);
+            //Toast.makeText(this,"please input correct petWeight",Toast.LENGTH_SHORT).show();
+            //return;
+        }
 
         ContentValues petValues = new ContentValues();
         //存入键值对
-        petValues.put(petEntry.PET_NAME, String.valueOf(etNameEdit.getText()));
-        petValues.put(petEntry.PET_BREED, String.valueOf(etBreedEdit.getText()));
+        petValues.put(petEntry.PET_NAME, petName);
+        petValues.put(petEntry.PET_BREED, petBreed);
         petValues.put(petEntry.PET_GENDER, mGender);
-        petValues.put(petEntry.PET_WEIGHT, String.valueOf(etWeightEdit.getText()));
+        petValues.put(petEntry.PET_WEIGHT, petWeight);
 
         Log.w("dataUriWeight","" + etWeightEdit.getText());
 
         getContentResolver().update(currentPetUri, petValues, null, null);
+        isAnythingChange = false;
+        Toast.makeText(this,"update success",Toast.LENGTH_SHORT).show();
 
     }
+    /**
+     * 监听是否产生修改
+     * @param view
+     * @param motionEvent
+     * @return
+     */
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        isAnythingChange = true;
+        return false;
+    }
+
+    /**
+     * 返回按键按下
+     */
+    @Override
+    public void onBackPressed() {
+        if (!isAnythingChange){//没有产生修改
+            super.onBackPressed();//返回
+            return;
+        }
+        /**
+         * 有修改
+         */
+        Dialog.OnClickListener listener = new Dialog.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        };
+
+        showUnChangeDialog(listener);
+    }
+
+    /**
+     * 监听返回上一级
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home :{
+                if (!isAnythingChange){//没有产生修改
+                    NavUtils.navigateUpFromSameTask(editPet.this);
+                    return true;
+                }
+                /**
+                 * 有修改
+                 */
+                Dialog.OnClickListener listener = new Dialog.OnClickListener(){
+
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        NavUtils.navigateUpFromSameTask(editPet.this);
+                    }
+                };
+
+                showUnChangeDialog(listener);
+                return true;
+
+            }
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showUnChangeDialog(DialogInterface.OnClickListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("是否放弃修改");
+        builder.setPositiveButton("确认",listener);//确认按键
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {//取消按键
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (dialogInterface != null){
+                    dialogInterface.dismiss();
+                }
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
 }

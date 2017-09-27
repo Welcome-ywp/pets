@@ -2,6 +2,7 @@ package com.ywp.yi.pets;
 
 import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,34 +16,36 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import java.net.URI;
-import java.util.ArrayList;
+import java.util.zip.Inflater;
 
 import Adapter.petCursorAdapter;
-import Adapter.petsListAdapter;
 import data.petContract.petEntry;
 import data.petSQLite;
 
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener , LoaderManager.LoaderCallbacks<Cursor>{
 
-    Toolbar toolbar;
+//    Toolbar toolbar;
     ListView lvPets;
     FloatingActionButton fab;
 
     private static final int PET_LOADER_ID = 0;
 
-    private SQLiteDatabase petData;
-
     private petCursorAdapter cursorAdapter;
+
+    private LoadStates myLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,20 +54,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d("main", "log test");
 
         findPetsView();
-        setSupportActionBar(toolbar);
+        //setSupportActionBar(toolbar);
         fab.setOnClickListener(this);//绑定监听器
 
         //将adapter 关联ListView
         cursorAdapter = new petCursorAdapter(this, null);
         lvPets.setAdapter(cursorAdapter);
+        //这是因为setEmptyView这个方法的设置是有限制的，就是设置的View必需在当前的View hierarchy里，
+        // 亦即这个View需要被add到当前View hierarchy的一个结点上，如果没有添加到结点上的话，
+        // 调用setEmptyView(View v)是没有任何效果的
+        LayoutInflater myInflater = getLayoutInflater();//获取Inflater
+        ViewGroup emptyView = (ViewGroup) myInflater.inflate(R.layout.empty_layout,null);//指定布局
+        emptyView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyView.setVisibility(View.GONE);//设置可见性
+        ViewGroup parentLayout = (ViewGroup) lvPets.getParent();
+
+        parentLayout.addView(emptyView);//添加到父布局
+        lvPets.setEmptyView(emptyView);
+
+
         // 初始化Loader
         getLoaderManager().initLoader(PET_LOADER_ID, null, this);// 加载器Id 可选参数 LoadCallBack的实现
 
 //        mPetArrayData = new ArrayList<>();
 //        petAdapter = new petsListAdapter(this, mPetArrayData);
        // lvPets.setAdapter(petAdapter);
-        //载入数据
-        upDatePetList();
         //ListView点击事件
         lvPets.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -81,8 +96,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //ListView长按事件
         lvPets.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(final AdapterView<?> adapterView, View view, final int itemPosition, long l) {
-                Toast.makeText(MainActivity.this, "" + itemPosition, Toast.LENGTH_SHORT).show();
+            public boolean onItemLongClick(final AdapterView<?> adapterView, View view, final int itemPosition, final long id) {
+                Toast.makeText(MainActivity.this, "" + id, Toast.LENGTH_SHORT).show();
                 //新建一个对话框
                 AlertDialog.Builder deleteDialog = new AlertDialog.Builder(MainActivity.this);
                 deleteDialog.setIcon(R.mipmap.ic_launcher);//设置对话框图标
@@ -91,16 +106,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 deleteDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        deleteCurrentPet(itemPosition, adapterView);
+                        deleteCurrentPet(id);
                     }
                 });
                 //设置对话框取消按键
-                deleteDialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                });
+                deleteDialog.setNegativeButton("取消", null);
                 deleteDialog.show();
                 return true;
             }
@@ -109,19 +119,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 删除当前长按的宠物选项
-     * @param petPosition
-     * @param adapterView
+     * @param id
      */
-    private void deleteCurrentPet(int petPosition, AdapterView<?> adapterView) {
-        petsList p = (petsList) adapterView.getItemAtPosition(petPosition);
-        String whereClause = "name = ? AND breed = ?";
-        String[] whereArgs = {p.getPetName(), p.getPetBreed()};
-
-        petSQLite mSQLite = new petSQLite(MainActivity.this);
-        petData = mSQLite.getReadableDatabase();
-        petData.delete(petEntry.TABLE_NAME, whereClause, whereArgs);
-        Toast.makeText(MainActivity.this, "Delete success" + petPosition, Toast.LENGTH_SHORT).show();
-        upDatePetList();
+    private void deleteCurrentPet(long id) {
+//        petsList p = (petsList) adapterView.getItemAtPosition(petPosition);
+//        String whereClause = "name = ? AND breed = ?";
+//        String[] whereArgs = {p.getPetName(), p.getPetBreed()};
+//
+//        petSQLite mSQLite = new petSQLite(MainActivity.this);
+//        petData = mSQLite.getReadableDatabase();
+//        petData.delete(petEntry.TABLE_NAME, whereClause, whereArgs);
+        Uri currentItemUri = ContentUris.withAppendedId(petEntry.CONTENT_URI,id);
+        getContentResolver().delete(currentItemUri,null,null);
+        Toast.makeText(MainActivity.this, "Delete success" + id, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -134,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 查找控件
      */
     private void findPetsView() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        toolbar = (Toolbar) findViewById(R.id.toolbar);
         lvPets = (ListView) findViewById(R.id.lv_pets);
         fab = (FloatingActionButton) findViewById(R.id.fab);
     }
@@ -174,7 +184,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.actionFresh) {
             Log.d("main", "about");
             //刷新数据
-            upDatePetList();
         }
 
         return super.onOptionsItemSelected(item);
@@ -184,77 +193,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 删除所有数据
      */
     private void deletePetList() {
-        getContentResolver().delete(petEntry.CONTENT_URI, null, null);
         getContentResolver().delete(petEntry.CONTENT_URI,null,null);
-//        petSQLite mSQLite = new petSQLite(this);
+        //        petSQLite mSQLite = new petSQLite(this);
 //        petData = mSQLite.getReadableDatabase();
 //        petData.delete(petEntry.TABLE_NAME, null, null);
-    }
-
-    /**
-     * 更新ListView中的数据
-     *
-     * @param
-     */
-    private void upDatePetList() {
-//        String Id;
-//        String Name;
-//        String Breed;
-        String[] projection = { //需要显示的行
-                petEntry._ID,
-                petEntry.PET_NAME,
-                petEntry.PET_BREED,
-                petEntry.PET_GENDER,
-                petEntry.PET_WEIGHT
-        };
-        //mPetArrayData.clear();
-//        petSQLite mSQLite = new petSQLite(this);
-//        petData = mSQLite.getReadableDatabase();
-//        Cursor cursor = petData.query(petEntry.TABLE_NAME,
-//                projection, null, null, null, null, null);
-        //单个数据的uri
-        //Uri singlePetContentUri = Uri.parse(petEntry.CONTENT_URI + "/" + 2);
-
-
-
-//        try {
-//
-//            while (cursor.moveToNext()) {
-//                int petId = cursor.getInt(cursor.getColumnIndex(petEntry._ID));
-//                Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));//品种
-//                Id = String.valueOf(petId);//ID
-//                Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));//姓名
-//                mPetArrayData.add(new petsList(Name + Id, Breed));
-//                Log.d("add", Id);
-//                Log.d("add", Name);
-//            }
-//            //更新adapter
-//            petAdapter.notifyDataSetChanged();
-//        } finally {
-//            //关闭cursor
-//            cursor.close();
-//        }
-        Cursor cursor = getContentResolver().query(petEntry.CONTENT_URI,projection,null,null,null);
-
-        petCursorAdapter adapter = new petCursorAdapter(this,cursor);
-        lvPets.setAdapter(adapter);
-        /*try {
-
-            while (cursor.moveToNext()) {
-                int petId = cursor.getInt(cursor.getColumnIndex(petEntry._ID));
-                Breed = cursor.getString(cursor.getColumnIndex(petEntry.PET_BREED));//品种
-                Id = String.valueOf(petId);//ID
-                Name = cursor.getString(cursor.getColumnIndex(petEntry.PET_NAME));//姓名
-                mPetArrayData.add(new petsList(Name + Id, Breed));
-                Log.d("add", Id);
-                Log.d("add", Name);
-            }
-            //更新adapter
-            petAdapter.notifyDataSetChanged();
-        } finally {
-            //关闭cursor
-            cursor.close();
-        }*/
     }
 
     /**
@@ -285,11 +227,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        //Swap in a new Cursor,
+        // returning the old Cursor. Unlike changeCursor(Cursor),
+        // the returned old Cursor is not closed.
         cursorAdapter.swapCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         cursorAdapter.swapCursor(null);
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setIcon(R.mipmap.ic_launcher);//设置对话框图标
+        builder.setTitle("是否退出");//设置对话框信息
+        //设置对话框确定按键
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        //设置对话框取消按键
+        builder.setNegativeButton("取消", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
     }
 }
