@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.antfortune.freeline'
+
 
 android {
     compileSdkVersion 25
@@ -17,9 +19,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    freeline{
+        hack true
+    }
 }
 
 dependencies {
+
+//    debugCompile 'com.antfortune.freeline:runtime:0.8.7'
+//    releaseCompile 'com.antfortune.freeline:runtime-no-op:0.8.7'
+//    testCompile 'com.antfortune.freeline:runtime-no-op:0.8.7'
+
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
