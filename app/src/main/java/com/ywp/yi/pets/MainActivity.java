@@ -28,6 +28,8 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.antfortune.freeline.FreelineCore;
+
 import java.util.zip.Inflater;
 
 import Adapter.petCursorAdapter;
@@ -51,7 +53,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//        FreelineCore.init(this);
+
         Log.d("main", "log test");
+        //Toast.makeText(this,"freeLine Test",Toast.LENGTH_SHORT).show();
 
         findPetsView();
         //setSupportActionBar(toolbar);
